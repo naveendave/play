@@ -1,0 +1,61 @@
+# Install Nginx using roles
+
+---
+  - hosts: webservers
+    become: true
+    roles:
+      - webservers
+
+  - hosts: local
+    environment:
+      PYTHONPATH: "/home/path/.local/lib/python2.7/site-packages"
+    become: true
+    vars:
+      docker_service_state: "started"
+      docker_service_enabled: "true"
+      docker_restart_handler_state: "restarted"
+
+    tasks:
+      - name: "(Install: CentOS/RedHat) Docker install"
+        package: name=docker state=latest
+        when: ansible_os_family != "FreeBSD"
+
+      - name: "restart docker"
+        service: "name=docker state={{ docker_restart_handler_state }}"
+
+      - name: Re-create a Debian container
+        docker_container:
+          name: mydebian
+          image: ansible/container-conductor-debian-stretch:0.9.3rc4 
+          command: sleep infinity
+          state: started
+          recreate: yes
+
+      - name: Re-create a centos container
+        docker_container:
+          name: mycentos
+          image: ansible/container-conductor-centos-7:0.9.2
+          command: sleep infinity
+          state: started
+          recreate: yes
+
+      - name: add to inventory
+        add_host:
+          name: mycentos
+          groups: docker_images
+          ansible_connection: docker
+          ansible_user: root
+
+      - name: add to inventory
+        add_host:
+          name: mydebian
+          groups: docker_images
+          ansible_connection: docker
+          ansible_user: root
+
+  - hosts: docker_images
+    become: true
+    become_method: sudo
+    gather_facts: true
+    roles:
+      - webservers

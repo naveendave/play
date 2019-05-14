@@ -1,0 +1,9 @@
+# Install Nginx using roles
+
+---
+  - hosts: docker_images
+    become: true
+    become_method: sudo
+    gather_facts: true
+    roles:
+      - webservers

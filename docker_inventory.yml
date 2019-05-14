@@ -1,0 +1,5 @@
+- name: Test docker_inventory, this will not connect to any hosts
+  hosts: all
+  gather_facts: no
+  tasks:
+    - debug: msg="IBM_CONTAINER_LOG|{{ inventory_hostname }} ansible_connection=docker|"

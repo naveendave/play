@@ -1,0 +1,3 @@
+[docker_images]
+mycentos ansible_connection=docker
+mydebian ansible_connection=docker
